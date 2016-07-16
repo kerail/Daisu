@@ -233,12 +233,15 @@ class PrecisionTests<TEST_COUNT, Reference> {
     Vector3dListMap::iterator zero18It = m_tests.find("ZERO18");
     Vector3dListMap::iterator zero22It = m_tests.find("ZERO22");
 
-#pragma omp parallel for shared(usualIt, zero15It,zero18It)
+#pragma omp parallel for shared(usualIt, zero15It, zero18It, zero22It)
     for (size_t i = 0; i < TEST_COUNT; ++i) {
-      usualIt->second[i] = Eigen::Vector3d::Random();
-      zero15It->second[i] = Eigen::Vector3d::Random() * 1e-15;
-      zero18It->second[i] = Eigen::Vector3d::Random() * 1e-18;
-      zero22It->second[i] = Eigen::Vector3d::Random() * 1e-22;
+      Eigen::Vector3d rnd = Eigen::Vector3d::Random();
+      rnd.normalize();
+      rnd *= M_PI * 2;
+      usualIt->second[i] = rnd;
+      zero15It->second[i] = rnd * 1e-15;
+      zero18It->second[i] = rnd * 1e-18;
+      zero22It->second[i] = rnd * 1e-22;
     }
   }
 
@@ -263,7 +266,7 @@ class PrecisionTests<TEST_COUNT, Reference> {
 };
 
 int main() {
-  PrecisionTests<size_t(100000), ReferenceSO3, TestMySO3Direct, TestMySO3Quat, TestAngleAxisSO3>
+  PrecisionTests<size_t(1000000), ReferenceSO3, TestMySO3Direct, TestMySO3Quat, TestAngleAxisSO3>
       testMachine;
   testMachine.run();
 }
