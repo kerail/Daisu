@@ -45,11 +45,35 @@ class SO3 {
   }
 
   Vector3 rotateVector(const Vector3 &v) const {
-    T a = getAngle();
-    Vector3 axis = getAxis();
-    T c_a = cos(a);
-    T s_a = sin(a);
-    return v * c_a + (axis.cross(v)) * s_a + axis * (axis.dot(v)) * (1 - c_a);
+    T l2 = m_coeffs.squaredNorm();
+    T l = sqrt(l2);
+
+    T sa_l, ca, ca1_ll;
+    if (l == T(0)) {
+      sa_l = 1;
+    } else {
+      sa_l = sin(l) / l;
+    }
+
+    ca = cos(l);
+
+    static const T c_pi4096 = cos(M_PI / T(4096));
+    if (ca > c_pi4096) {//fabs(l) < M_PI/T(4096)
+      // when l is near nezo, we need to switch to more precise formula
+      if (l2 == T(0)) {
+        // when l2 is zero, we can precisely calculate limit
+        ca1_ll = 1 / T(2);
+      } else {
+        // 1 - cos(x) = 2 * sin(x/2)^2
+        T sn = sin(l / T(2));
+        ca1_ll = T(2) * sn * sn / l2;
+      }
+    } else {
+      // here l2 > 0 because abs(l) > pi/4096
+      ca1_ll = (T(1) - ca) / l2;
+    }
+
+    return v * ca + (m_coeffs * sa_l).cross(v) + m_coeffs * ((m_coeffs.dot(v)) * ca1_ll);
   }
 
   Matrix33 getMatrix() const {
@@ -68,8 +92,8 @@ class SO3 {
     }
 
     cs = cos(l);
-    static const T c_pi64 = cos(M_PI / T(64));
-    if (cs > c_pi64) {//fabs(l) < M_PI/T(64)
+    static const T c_pi4096 = cos(M_PI / T(4096));
+    if (cs > c_pi4096) {//fabs(l) < M_PI/T(4096)
       // when l is near nezo, we need to switch to more precise formula
       if (l2 == T(0)) {
         // when l2 is zero, we can precisely calculate limit
@@ -80,7 +104,7 @@ class SO3 {
         cs1_ll = T(2) * sn * sn / l2;
       }
     } else {
-      // here l2 > 0 because abs(l) > pi/64
+      // here l2 > 0 because abs(l) > pi/4096
       cs1_ll = (T(1) - cs) / l2;
     }
 
