@@ -33,6 +33,11 @@ class SO3 {
     fromQuaternion(q_);
   }
 
+  SO3(const Matrix33 &m) {
+    assert(isRotationMatrix(m));
+    //TODO: implement
+  }
+
   Matrix33 getMatrix() const {
     Matrix33 m;
     const Vector3 &cfs = m_coeffs;
@@ -89,8 +94,7 @@ class SO3 {
 //    m.coeffRef(2, 2) = 1 + (-sq.x() - sq.y());
 
     // Rotation matrix checks
-    assert((m * m.transpose() - Matrix33::Identity()).norm() < 1e-10);
-    assert(fabs(fabs(m.determinant()) - 1) < 1e-10);
+    assert(isRotationMatrix(m));
     return m;
   }
 
@@ -185,7 +189,10 @@ class SO3 {
       m_coeffs = qv * (T(2) / q.w()); ////NOTE: signed
     }
   }
-
+  bool isRotationMatrix(const Matrix33 &m) const {
+    return ((m * m.transpose() - Matrix33::Identity()).norm() < 1e-10)
+           && (fabs(fabs(m.determinant()) - 1) < 1e-10);
+  }
 };
 
 typedef SO3<double> SO3d;
