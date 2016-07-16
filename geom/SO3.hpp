@@ -30,18 +30,7 @@ class SO3 {
   }
 
   SO3(const Quaternion &q_) {
-    const Quaternion &q = q_.w() >= T(0) ? q_ : Quaternion(-q_.coeffs());
-
-    const Vector3 &qv = q.vec();
-    T sinha = qv.norm();
-    if (sinha > T(0)) {
-      T angle = T(2) * atan2(sinha, q.w()); //NOTE: signed
-      m_coeffs = qv * (angle / sinha);
-    } else {
-      // if l is too small, its norm can be equal 0 but norm_inf greater 0
-      // probably w is much bigger that vec, use it as length
-      m_coeffs = qv * (T(2) / q.w()); ////NOTE: signed
-    }
+    fromQuaternion(q_);
   }
 
   Matrix33 getMatrix() const {
@@ -165,8 +154,37 @@ class SO3 {
     return SO3<T>(-m_coeffs);
   }
 
+  SO3<T> operator *(const SO3<T> &r) {
+    SO3<T> l(*this);
+    return l *= r;
+  }
+
+  SO3<T> &operator *=(const SO3<T> &l) {
+    fromQuaternion(getQuaternion() * l.getQuaternion());
+    return *this;
+  }
+
+  SO3<T> operator ~() {
+    return inverted();
+  }
+
  private:
   Vector3 m_coeffs;
+
+  void fromQuaternion(const Quaternion &q_) {
+    const Quaternion &q = q_.w() >= T(0) ? q_ : Quaternion(-q_.coeffs());
+
+    const Vector3 &qv = q.vec();
+    T sinha = qv.norm();
+    if (sinha > T(0)) {
+      T angle = T(2) * atan2(sinha, q.w()); //NOTE: signed
+      m_coeffs = qv * (angle / sinha);
+    } else {
+      // if l is too small, its norm can be equal 0 but norm_inf greater 0
+      // probably w is much bigger that vec, use it as length
+      m_coeffs = qv * (T(2) / q.w()); ////NOTE: signed
+    }
+  }
 
 };
 
