@@ -30,27 +30,27 @@ class AbstractTestSO3 {
   static std::string name();
 };
 
-class ReferenceSO3: public AbstractTestSO3 {
- public:
-  ReferenceSO3(const Eigen::Vector3d &v) : AbstractTestSO3(v), m_so3(v.cast<float_100>()) { }
-  virtual Matrix3f100 getMatrix() {
-    return m_so3.getMatrix();
-  }
-  static std::string name() {
-    return "Reference";
-  }
-  ReferenceSO3Impl m_so3;
-};
+//class ReferenceSO3: public AbstractTestSO3 {
+// public:
+//  ReferenceSO3(const Eigen::Vector3d &v) : AbstractTestSO3(v), m_so3(v.cast<float_100>()) { }
+//  virtual Matrix3f100 getMatrix() {
+//    return m_so3.getQuaternion().toRotationMatrix();
+//  }
+//  static std::string name() {
+//    return "Reference";
+//  }
+//  ReferenceSO3Impl m_so3;
+//};
 //
 //class ReferenceSO3: public AbstractTestSO3 {
 // public:
 //  ReferenceSO3(const Eigen::Vector3d &v) : AbstractTestSO3(v) {
-//    double angle = v.norm();
-//    Eigen::Vector3d axis = v;
+//    Eigen::Matrix<float_100, 3, 1> axis = v.cast<float_100>();
+//    float_100 angle = axis.norm();
 //    if (angle > 0) {
 //      axis /= angle;
 //    }
-//    m_aa = Eigen::AngleAxis<float_100>((float_100) angle, axis.cast<float_100>());
+//    m_aa = Eigen::AngleAxis<float_100>(angle, axis);
 //  }
 //  virtual Matrix3f100 getMatrix() {
 //    return m_aa.toRotationMatrix();
@@ -60,6 +60,24 @@ class ReferenceSO3: public AbstractTestSO3 {
 //  }
 //  Eigen::AngleAxis<float_100> m_aa;
 //};
+class ReferenceSO3: public AbstractTestSO3 {
+ public:
+  ReferenceSO3(const Eigen::Vector3d &v) : AbstractTestSO3(v) {
+    Eigen::Matrix<float_100, 3, 1> axis = v.cast<float_100>();
+    float_100 angle = axis.norm();
+    if (angle > 0) {
+      axis /= angle;
+    }
+    m_aa = Eigen::AngleAxis<float_100>(angle, axis);
+  }
+  virtual Matrix3f100 getMatrix() {
+    return Eigen::Quaternion<float_100>(m_aa).toRotationMatrix();
+  }
+  static std::string name() {
+    return "Reference";
+  }
+  Eigen::AngleAxis<float_100> m_aa;
+};
 
 class TestMySO3Direct: public AbstractTestSO3 {
  public:

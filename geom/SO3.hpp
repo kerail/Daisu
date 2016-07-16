@@ -100,12 +100,12 @@ class SO3 {
     m.coeffRef(1, 2) = tmp - sn_ax.x();
     m.coeffRef(2, 1) = tmp + sn_ax.x();
 
-    m.diagonal() = (cs1_l_ax.cwiseProduct(m_coeffs)).array() + cs;
+//    m.diagonal() = (cs1_l_ax.cwiseProduct(m_coeffs)).array() + cs;
 
-//    Vector3 sq = cs1_l_ax.cwiseProduct(m_coeffs);
-//    m.coeffRef(0, 0) = 1 + (-sq.y() - sq.z());
-//    m.coeffRef(1, 1) = 1 + (-sq.x() - sq.z());
-//    m.coeffRef(2, 2) = 1 + (-sq.x() - sq.y());
+    Vector3 sq = cs1_l_ax.cwiseProduct(m_coeffs);
+    m.coeffRef(0, 0) = 1 + (-sq.y() - sq.z());
+    m.coeffRef(1, 1) = 1 + (-sq.x() - sq.z());
+    m.coeffRef(2, 2) = 1 + (-sq.x() - sq.y());
 
     // Rotation matrix checks
     assert((m * m.transpose() - Matrix33::Identity()).norm() < 1e-10);
