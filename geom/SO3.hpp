@@ -44,38 +44,6 @@ class SO3 {
     }
   }
 
-  Vector3 rotateVector(const Vector3 &v) const {
-    T l2 = m_coeffs.squaredNorm();
-    T l = sqrt(l2);
-
-    T sa_l, ca, ca1_ll;
-    if (l == T(0)) {
-      sa_l = 1;
-    } else {
-      sa_l = sin(l) / l;
-    }
-
-    ca = cos(l);
-
-    static const T c_pi4096 = cos(M_PI / T(4096));
-    if (ca > c_pi4096) {//fabs(l) < M_PI/T(4096)
-      // when l is near nezo, we need to switch to more precise formula
-      if (l2 == T(0)) {
-        // when l2 is zero, we can precisely calculate limit
-        ca1_ll = 1 / T(2);
-      } else {
-        // 1 - cos(x) = 2 * sin(x/2)^2
-        T sn = sin(l / T(2));
-        ca1_ll = T(2) * sn * sn / l2;
-      }
-    } else {
-      // here l2 > 0 because abs(l) > pi/4096
-      ca1_ll = (T(1) - ca) / l2;
-    }
-
-    return v * ca + (m_coeffs * sa_l).cross(v) + m_coeffs * ((m_coeffs.dot(v)) * ca1_ll);
-  }
-
   Matrix33 getMatrix() const {
     Matrix33 m;
     const Vector3 &cfs = m_coeffs;
@@ -148,6 +116,38 @@ class SO3 {
     }
   }
 
+  Vector3 rotateVector(const Vector3 &v) const {
+    T l2 = m_coeffs.squaredNorm();
+    T l = sqrt(l2);
+
+    T sa_l, ca, ca1_ll;
+    if (l == T(0)) {
+      sa_l = 1;
+    } else {
+      sa_l = sin(l) / l;
+    }
+
+    ca = cos(l);
+
+    static const T c_pi4096 = cos(M_PI / T(4096));
+    if (ca > c_pi4096) {//fabs(l) < M_PI/T(4096)
+      // when l is near nezo, we need to switch to more precise formula
+      if (l2 == T(0)) {
+        // when l2 is zero, we can precisely calculate limit
+        ca1_ll = 1 / T(2);
+      } else {
+        // 1 - cos(x) = 2 * sin(x/2)^2
+        T sn = sin(l / T(2));
+        ca1_ll = T(2) * sn * sn / l2;
+      }
+    } else {
+      // here l2 > 0 because abs(l) > pi/4096
+      ca1_ll = (T(1) - ca) / l2;
+    }
+
+    return v * ca + (m_coeffs * sa_l).cross(v) + m_coeffs * ((m_coeffs.dot(v)) * ca1_ll);
+  }
+
   Vector3 coeffs() const {
     return m_coeffs;
   }
@@ -167,20 +167,6 @@ class SO3 {
 
  private:
   Vector3 m_coeffs;
-
-  Matrix33 antiSymmMatrix() const {
-    Vector3 axis = getAxis();
-    Matrix33 m = Matrix33::Zero();
-    m(0, 1) = -axis(2);
-    m(1, 0) = axis(2);
-
-    m(0, 2) = axis(1);
-    m(2, 0) = -axis(1);
-
-    m(2, 1) = axis(0);
-    m(1, 2) = -axis(0);
-    return m;
-  }
 
 };
 
