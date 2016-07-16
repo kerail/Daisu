@@ -30,7 +30,7 @@ inline void so3_test_rotation(const SO3d &s, const Eigen::Vector3d &v) {
 double test(size_t testCount, const boost::function<void(const SO3d &, const Eigen::Vector3d &)> &f) {
   clock_t startClock = clock();
   for (size_t i = 0; i < testCount; ++i) {
-    SO3d so3(Eigen::Vector3d::Random());
+    SO3d so3((Eigen::Vector3d) Eigen::Vector3d::Random());
     Eigen::Vector3d testVec = Eigen::Vector3d::Random();
 
     so3_test_matrix(so3, testVec);
