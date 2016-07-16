@@ -114,14 +114,14 @@ class SO3 {
   }
 
   Quaternion getQuaternion() const {
-    T a = getAngle();
-    Vector3 axis = getAxis();
-    T c_a2 = cos(a / 2.0);
-    T s_a2 = sin(a / 2.0);
-    Vector3 im = axis * s_a2;
-    T real = c_a2;
-
-    return Quaternion(real, im.x(), im.y(), im.z());
+    const Vector3 cf2 = m_coeffs / T(2);
+    T a = cf2.norm();
+    if (a > T(0)) {
+      T sn = sin(a) / a;
+      return Quaternion(cos(a), cf2.x() * sn, cf2.y() * sn, cf2.z() * sn);
+    } else {
+      return Quaternion(T(1), cf2.x(), cf2.y(), cf2.z());
+    }
   }
 
   Vector3 coeffs() const {
